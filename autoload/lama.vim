@@ -6,6 +6,7 @@ let g:autoloaded_lama = 1
 scriptencoding utf-8
 
 let s:root = expand('<sfile>:h:h')
+let s:js_root = s:root . '/lama'
 let s:home = expand(expand('$HOME'))
 let s:home = substitute(s:home, '\', '/', 'g')
 let s:config_file = s:home . '/.config/lama/config.vim'
@@ -42,6 +43,7 @@ function! lama#Toggle()
     let b:lama = {}
     let job = jobstart(['node', s:root . '/lama/helper.js', g:lama_ws_url], {
           \'on_stdout': function('s:onOut'),
+          \'on_stderr': function('s:onErr'),
           \'on_exit':function('s:onExit'),
         \})
 
@@ -58,6 +60,37 @@ let s:hlgroup = 'LamaSuggestion'
 
 function! lama#NvimNs() abort
   return nvim_create_namespace('varal7-lama')
+endfunction
+
+function! lama#Install() abort
+  let yarncmd = get(g:, 'lama_install_yarn_cmd', executable('yarnpkg') ? 'yarnpkg' : executable('yarn') ? 'yarn' : 'npm')
+  let cmd = yarncmd . ' install'
+  let cwd = s:js_root
+  let job = jobstart(cmd, {
+        \'on_stdout': function('s:onOut'),
+        \'on_stderr': function('s:onErr'),
+        \'on_exit':function('s:onExit'),
+        \'cwd': cwd,
+      \})
+endfunction
+
+fun s:error(msg) abort
+   echohl Error
+   for line in a:msg->split('\n')
+       echom line
+   endfor
+   echohl None
+endfun
+
+function! s:onErr(job, text, event)
+  if empty(a:text[-1])
+    call remove(a:text, -1)
+  endif
+  if empty(a:text)
+    return
+  endif
+  echon join(a:text, "\n")
+  echoerr "Did you run call lama#Install()?"
 endfunction
 
 function! s:onOut(job, text, event)

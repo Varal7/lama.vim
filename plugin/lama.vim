@@ -5,8 +5,6 @@ let g:loaded_lama = 1
 
 scriptencoding utf-8
 
-command! -nargs=0 SayHi call lama#ShowVirtualText()
-    
 function! s:ColorScheme() abort
   if &t_Co == 256
     hi def LamaSuggestion guifg=#b0aaff ctermfg=244
@@ -23,3 +21,6 @@ nmap <Plug>(lama-stop)     <Cmd>call lama#Stop()<CR>
 
 imap <Plug>(lama-toggle)     <Cmd>call lama#Toggle()<CR>
 nmap <Plug>(lama-toggle)     <Cmd>call lama#Toggle()<CR>
+
+nmap <Plug>(lama-install)     <Cmd>call lama#Install()<CR>
+

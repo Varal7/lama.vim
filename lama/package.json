@@ -2,5 +2,6 @@
   "dependencies": {
     "ws": "^8.13.0"
   },
-  "type": "module"
+  "type": "module",
+  "license": "MIT"
 }

@@ -13,8 +13,13 @@ French: un lama
 
 ## Installation
 
-Use your favorite plugin manager.
-But also, please do `yarn` or `npm install` in the `lama` folder.
+Use your favorite plugin manager. E.g. with Plug:
+
+```
+Plug 'varal7/lama.vim', {'do': { -> lama#install()}}
+```
+
+If not using a plugin manager, please run `yarn` or `npm install` in the `lama` folder.
 
 Configure `g:lama_ws_url` to point to a Gradio websocket (should start with `ws://` or `wss://` and end in `/join/queue/`)
 
