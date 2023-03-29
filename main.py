@@ -20,7 +20,9 @@ args = parser.parse_args()
 
 # Load model
 
+print('Loading tokenizer from {}'.format(args.model))
 tokenizer = AutoTokenizer.from_pretrained(args.model)
+print('Loading model from {}'.format(args.model))
 model = AutoModelForCausalLM.from_pretrained(args.model, torch_dtype=torch.float16 if args.fp16 else torch.float32)
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
