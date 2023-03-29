@@ -49,10 +49,15 @@ function! lama#Toggle() abort
 
     let b:lama.job = job
 
-    let prompt = join(getline(1, '$'), "\n")
-    let b:lama.prompt = prompt
+    " Get position of cursor
+    let b:lama.line = line('.')
+    let b:lama.col = col('.')
 
-    call chansend(job, prompt)
+    " Get current buffer up to cursor
+    let b:lama.prompt = join(getline(1, line('.') - 1), "\n")
+    let b:lama.prompt .= "\n" . getline(line('.'))[0:col('.') - 2]
+
+    call chansend(job, b:lama.prompt)
   endif
 endfunction
 
@@ -82,7 +87,7 @@ fun s:error(msg) abort
    echohl None
 endfun
 
-function! s:onErr(job, text, event)
+function! s:onErr(job, text, event) abort
   if empty(a:text[-1])
     call remove(a:text, -1)
   endif
@@ -93,8 +98,11 @@ function! s:onErr(job, text, event)
   echoerr "Did you run call lama#Install()?"
 endfunction
 
-function! s:onOut(job, text, event)
+function! s:onOut(job, text, event) abort
   " display the suggestion as virtual text
+  if !exists('b:lama')
+    return
+  endif
   
   let text = a:text
   " remove the trailing newline
@@ -127,13 +135,13 @@ function! s:onOut(job, text, event)
 
   " display virtual text
   let data = {'id': 1}
-  let lastline = line('$')    " Get line number of last line in buffer
+  let curline = b:lama.line
+  let curcol = b:lama.col
   let linewidth = winwidth('%')
-  let eol_col = strlen(getline(lastline)) + 1  " Get column number of end-of-line
 
   " First we break the first line if it goes over the width of the window
-  if eol_col + strlen(text[0]) > linewidth
-    let split = linewidth - eol_col - 3
+  if curcol + strlen(text[0]) > linewidth
+    let split = linewidth - curcol - 3
     let data.virt_text = [[strpart(text[0], 0, split), s:hlgroup]]
     let text[0] = strpart(text[0], split)
   else
@@ -153,22 +161,19 @@ function! s:onOut(job, text, event)
 
   let data.hl_mode = 'combine'
   let data.virt_text_pos = 'overlay'
-  call nvim_buf_set_extmark(0, lama#NvimNs(), lastline-1, eol_col-1, data)
+  call nvim_buf_set_extmark(0, lama#NvimNs(), curline-1, curcol-1, data)
 endfunction 
 
 
 function! lama#ShowVirtualText()
-  let lastline = line('$')    " Get line number of last line in buffer
-  let eol_col = strlen(getline(lastline)) + 1  " Get column number of end-of-line
-  let virt_text = 'End of buffer'             " Virtual text to display
+  let b:line = line('.')    " Get line number of last line in buffer
+  let b:col = col('.')
   let data = {'id': 1}
   let data.virt_text = [["Hello", s:hlgroup]]
   let data.hl_mode = 'combine'
   let data.virt_text_pos = 'overlay'
-  echom lastline
-  echom eol_col
 
-  call nvim_buf_set_extmark(0, lama#NvimNs(), lastline-1, eol_col-1, data)
+  call nvim_buf_set_extmark(0, lama#NvimNs(), b:line-1, b:col-1, data)
 endfunction
 
 function! s:onExit(job, data, type)
@@ -178,14 +183,37 @@ endfunction
 
 
 function! s:flush()
-  if exists('b:lama')
-    call nvim_buf_clear_namespace(0, lama#NvimNs(), 0, -1)
+  if exists('b:lama') && !get(b:lama, 'flushed', 0)
+    let b:lama.flushed = 1
     let text = get(b:lama, 'suggestion', "")
+    let prompt = b:lama.prompt
+    let line = b:lama.line
+
+    call nvim_buf_clear_namespace(0, lama#NvimNs(), 0, -1)
+
     if empty(text)
       return
     endif
-    let text = split(text, "\n")
-    call append(0, text)
-    call deletebufline("%", len(text) + 1, "$")
+
+    let remaining_text = strpart(text, len(prompt))
+    let text = split(remaining_text, "\n")
+
+    let last_prompt_line = split(prompt, "\n")[-1]
+    let first_line = last_prompt_line . text[0]
+
+    " insert the suggestion
+    call setline(line, first_line)
+
+    " insert the rest of the suggestion
+    call append(line, text[1:])
+
+    let b:debug = text
+
+    " move the cursor to the end of the suggestion
+    let last_line = line + len(text) - 1
+    let last_line_len = strlen(text[-1])
+    call cursor(last_line, last_line_len + 1)
+
+    " call append(0, text)
   endif
 endfunction
