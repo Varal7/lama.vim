@@ -20,7 +20,7 @@ else
   call writefile(["\"let g:lama_ws_url = 'ws://localhost:7860/queue/join'"], s:config_file, "a")
 endif
 
-function! lama#Stop()
+function! lama#Stop() abort
   if exists('b:lama')
     call s:flush()
     echo "Stopping Lama"
@@ -28,7 +28,7 @@ function! lama#Stop()
   endif
 endfunction
 
-function! lama#Toggle()
+function! lama#Toggle() abort
   if exists('b:lama')
     call s:flush()
     echo "Stopping Lama"
