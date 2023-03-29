@@ -137,7 +137,7 @@ function! s:onOut(job, text, event) abort
   let data = {'id': 1}
   let curline = b:lama.line
   let curcol = b:lama.col
-  let linewidth = winwidth('%')
+  let linewidth = winwidth('%') - 5
 
   " First we break the first line if it goes over the width of the window
   if curcol + strlen(text[0]) > linewidth
