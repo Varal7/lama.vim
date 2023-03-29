@@ -117,10 +117,16 @@ function! s:onOut(job, text, event) abort
   let text = join(text, "\n")
   "if text doesn't start with <START>, then it's a message
   if text[0:7] != '<START> '
-    echo text
+    echo "Lama: " . text
     return
   endif
+
   "otherwise it's a suggestion
+  if !get(b:lama, "generating", 0)
+    let b:lama.generating = 1
+    echo "Generating suggestion... toggle again to stop"
+  endif
+  
   "split at <START> because the channel might have sent multiple messages in
   let text = split(text, '<START> ')[-1]
 
@@ -178,6 +184,7 @@ endfunction
 
 function! s:onExit(job, data, type)
   call s:flush()
+  echo "Lama stopped"
   unlet! b:lama
 endfunction
 

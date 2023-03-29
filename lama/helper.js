@@ -31,7 +31,7 @@ async function main(context, args) {
       ws.send(
         JSON.stringify({
           session_hash: session,
-          fn_index: 7,
+          fn_index: 0,
         })
       );
     } else if (content.msg === 'estimation') {
@@ -40,7 +40,7 @@ async function main(context, args) {
       ws.send(
         JSON.stringify({
           session_hash: session,
-          fn_index: 7,
+          fn_index: 0,
           data: [
             context,
             params.max_new_tokens,
@@ -61,9 +61,15 @@ async function main(context, args) {
         })
       );
     } else if (content.msg === 'process_generating') {
-      console.log("<START>", content.output.data[0]);
+      const message = content.output.data[0];
+      if (typeof message === 'string') {
+        console.log("<START>", message);
+      }
     } else if (content.msg === 'process_completed') {
-      console.log("<START>", content.output.data[0]);
+      const message = content.output.data[0];
+      if (typeof message === 'string') {
+        console.log("<START>", message);
+      }
       ws.close();
       process.exit()
     }
