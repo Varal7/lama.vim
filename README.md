@@ -11,6 +11,10 @@ English: a llama
 French: un lama
 ```
 
+## Requirements
+
+This plugin requires Neovim and Node.
+
 ## Installation
 
 Use your favorite plugin manager. E.g. with Plug:
