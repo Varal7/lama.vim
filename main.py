@@ -14,13 +14,14 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--model', type=str, default='distilgpt2')
+parser.add_argument('--fp16', action='store_true')
 
 args = parser.parse_args()
 
 # Load model
 
 tokenizer = AutoTokenizer.from_pretrained(args.model)
-model = AutoModelForCausalLM.from_pretrained(args.model)
+model = AutoModelForCausalLM.from_pretrained(args.model, torch_dtype=torch.float16 if args.fp16 else torch.float32)
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model.to(device)
