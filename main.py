@@ -250,6 +250,10 @@ def generate_reply(question,
     with generate_with_streaming(**generate_params) as generator:
         for output in generator:
             reply = tokenizer.decode(output)
+            # Waiting for https://github.com/huggingface/transformers/pull/22402 to fix the issue with the tokenizer
+            reply = reply.split(question)[-1]
+            reply = question + reply
+
 
             if output[-1] in eos_token_ids:
                 break
